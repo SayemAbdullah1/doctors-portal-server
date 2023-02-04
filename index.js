@@ -22,8 +22,19 @@ async function run(){
         const bookingsCollection = client.db('doctorsPortalNew').collection('bookings')
 
         app.get('/appointmentOptions',  async(req, res)=>{
+            const date = req.query.date;
+            console.log(date)
             const query = {}
             const options = await appointmentOptionsCollection.find(query).toArray()
+            const bookingQuery = { appointmentDate : date}
+            const alreadyBooked = await bookingsCollection.find(bookingQuery).toArray()
+            options.forEach(option => {
+                const optionsBooked = alreadyBooked.filter(book => book.treatment === option.name)
+                const bookedSlots = optionsBooked.map(book => book.slot)
+                const remainingSlots = option.slots.filter(slot => !bookedSlots.includes(slot))
+                option.slots=remainingSlots
+                // console.log(option.name, remainingSlots.length)
+            })
             res.send(options)
         })
 
