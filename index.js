@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, CommandStartedEvent } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -39,7 +39,15 @@ async function run(){
         })
 
         app.post('/bookings', async(req, res) =>{
-            const query = req.body
+            const booking = req.body
+            const query = {
+                appointmentDate: booking.appointmentDate
+            }
+            const alreadyBooked = await bookingsCollection.find(query).toArray()
+            if(alreadyBooked.length){
+                const message = `You already booked on ${booking.appointmentDate}`
+                return res.send({acknowledged: false, message})
+            }
             const result = await bookingsCollection.insertOne(query)
             res.send(result)
         })
