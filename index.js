@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken')
 const { MongoClient, ServerApiVersion, CommandStartedEvent } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -13,7 +14,7 @@ app.use(express.json())
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.1q1hbsc.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
+// console.log(uri);
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run(){
@@ -61,6 +62,14 @@ async function run(){
             }
             const result = await bookingsCollection.insertOne(booking)
             res.send(result)
+        })
+
+        app.get('/jwt', async(req, res)=>{
+            const email = req.query.email
+            const query = {email: email}
+            const user = await userssCollection.findOne(query)
+            console.log(user)
+            res.send({accesToken: 'Token'})
         })
 
         app.post('/users', async(req, res)=>{
