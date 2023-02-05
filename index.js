@@ -22,7 +22,16 @@ function vairifyJWT(req, res, next){
     if(!authHeader){
         return res.send(401).send('unauthorized access')
     }
-    const token = authHeader.split(' ')[1]
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN, function(err, decoded){
+        if(err){
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+            req.decoded = decoded;
+            next()
+            
+    })
 }
 
 async function run(){
