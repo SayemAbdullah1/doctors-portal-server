@@ -112,7 +112,16 @@ async function run() {
 
         })
 
-        app.put('/users/admin/:id', async (req, res) => {
+        app.put('/users/admin/:id', vairifyJWT, async (req, res) => {
+
+            const decodedemail = req.decoded.email
+            const query = {email: decodedemail}
+            const user = await usersCollection.findOne(query)
+
+            if(user?.role !== 'admin'){
+                return res.status(403).send({message: 'Forbidden access!'})
+            }
+
             const id = req.params.id;
             console.log(id)
             const filter = { _id: new ObjectId(id) }
@@ -123,8 +132,7 @@ async function run() {
                 }
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options)
-            // const result = await usersCollection.findOne(filter).toArray()
-            // console.log(result)
+           
             res.send(result)
         })   
     } finally {
